@@ -90,6 +90,7 @@ describe("Filtering and sorting", () => {
     await screen.getByRole("checkbox", { name: "Available only" }).click();
     await screen.getByRole("button", { name: /^Reserve Mug/ }).click();
     await expect.poll(() => titles(screen)).toEqual(["Lamp"]);
+    await expect.element(screen.getByText("Reserved Mug.")).toBeVisible();
   });
 
   it("explains an empty result and recovers when the filter is cleared", async () => {

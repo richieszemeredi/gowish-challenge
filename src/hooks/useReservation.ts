@@ -6,11 +6,11 @@ import {
 } from "@tanstack/react-query";
 import {
   ConflictError,
-  CURRENT_USER,
   reserveItem,
   unreserveItem,
   type WishItem,
 } from "@/api";
+import { useToast } from "./useToast";
 
 export type ReservationAction = "reserve" | "unreserve";
 
@@ -26,34 +26,42 @@ const patchItem = (
   );
 };
 
-// One mutation per card, so a pending item never blocks the others.
+// Pessimistic: one mutation per card, so a pending item never blocks the others.
+// Toasts live in the hook-level callbacks: unlike the ones passed to `mutate`,
+// they still fire when the card unmounts because the list filter dropped it.
 export const useReservation = (
-  id: string,
-): UseMutationResult<
-  WishItem,
-  Error,
-  ReservationAction,
-  { previous: WishItem | undefined }
-> => {
+  item: WishItem,
+): UseMutationResult<WishItem, Error, ReservationAction> => {
   const client = useQueryClient();
-  return useMutation({
+  const notify = useToast();
+  const mutation = useMutation<WishItem, Error, ReservationAction>({
     mutationFn: async (action) =>
-      action === "reserve" ? reserveItem(id) : unreserveItem(id),
-    onMutate: async (action) => {
-      await client.cancelQueries({ queryKey: KEY });
-      const previous = client
-        .getQueryData<WishItem[]>(KEY)
-        ?.find((i) => i.id === id);
-      patchItem(client, id, {
-        reservedBy: action === "reserve" ? CURRENT_USER : null,
-      });
-      return { previous };
+      action === "reserve" ? reserveItem(item.id) : unreserveItem(item.id),
+    // The card only changes once the server has answered.
+    onSuccess: (updated, action) => {
+      patchItem(client, item.id, updated);
+      notify(
+        `${action === "reserve" ? "Reserved" : "Unreserved"} ${item.title}.`,
+      );
     },
-    onError: (error, _action, context) => {
-      const truth =
-        error instanceof ConflictError ? error.item : context?.previous;
-      if (truth) patchItem(client, id, truth);
+    onError: (error, action) => {
+      if (error instanceof ConflictError) {
+        patchItem(client, item.id, error.item);
+        notify(
+          action === "reserve"
+            ? `${error.item.reservedBy ?? "Someone"} already reserved ${item.title}.`
+            : `You no longer hold ${item.title}.`,
+        );
+      } else
+        notify(`Couldn’t ${action} ${item.title}.`, () => {
+          mutation.mutate(action);
+        });
     },
-    onSettled: async () => client.invalidateQueries({ queryKey: KEY }),
+    // Not returned: awaiting the refetch would keep the mutation pending (and
+    // the button disabled) for the whole round trip after the answer arrived.
+    onSettled: () => {
+      void client.invalidateQueries({ queryKey: KEY });
+    },
   });
+  return mutation;
 };

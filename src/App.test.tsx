@@ -318,7 +318,7 @@ describe("Reserving", () => {
     );
   };
 
-  it("reserves optimistically and unreserves again", async () => {
+  it("reserves and unreserves once the server answers", async () => {
     serve(item);
     const screen = await renderApp();
     await reserve(screen).click();
@@ -328,6 +328,18 @@ describe("Reserving", () => {
     await screen.getByRole("button", { name: /^Unreserve/ }).click();
     await expect.element(screen.getByText("Available")).toBeVisible();
     await expect.element(screen.getByText("Unreserved Lamp.")).toBeVisible();
+  });
+
+  it("keeps the card unchanged while the request is pending", async () => {
+    serve(item);
+    vi.mocked(api.reserveItem).mockReturnValue(new Promise(() => undefined));
+    const screen = await renderApp();
+    await reserve(screen).click();
+    await expect
+      .element(screen.getByRole("button", { name: "Reserving Lamp" }))
+      .toBeDisabled();
+    await expect.element(screen.getByText("Available")).toBeVisible();
+    expect(screen.getByText("Reserved by you").query()).toBeNull();
   });
 
   it("only blocks the pending item", async () => {
@@ -350,7 +362,7 @@ describe("Reserving", () => {
     await expect.element(reserve(screen)).toBeDisabled();
   });
 
-  it("rolls back to the server's truth on a conflict", async () => {
+  it("shows the server's truth on a conflict", async () => {
     const taken = { ...item, reservedBy: "mette" };
     serve(item);
     vi.mocked(api.reserveItem).mockImplementation(async () => {
@@ -366,7 +378,7 @@ describe("Reserving", () => {
     await expect.element(screen.getByText("Reserved by mette")).toBeVisible();
   });
 
-  it("rolls back on a network error and retries", async () => {
+  it("stays unchanged on a network error and retries", async () => {
     serve(item);
     const ok = vi.mocked(api.reserveItem).getMockImplementation();
     vi.mocked(api.reserveItem)
