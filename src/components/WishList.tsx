@@ -29,7 +29,11 @@ export function WishList(): React.JSX.Element {
 
   return (
     <div className="flex flex-col gap-5">
-      {data.length > 0 && <ListControls view={view} onChange={setView} />}
+      {data.length > 0 && (
+        <div className="sticky top-12 z-5 -mx-5 bg-paper/80 px-5 py-2 backdrop-blur-md sm:-mx-7 sm:px-7">
+          <ListControls view={view} onChange={setView} />
+        </div>
+      )}
       <WishItems
         items={visible}
         emptyText={data.length > 0 ? "No available wishes." : "No wishes yet."}

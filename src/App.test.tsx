@@ -251,6 +251,25 @@ describe("Sticky header", () => {
   });
 });
 
+describe("List controls", () => {
+  it("stay visible below the sticky header while scrolling", async () => {
+    await page.viewport(390, 600);
+    vi.mocked(api.getItems).mockResolvedValue(
+      Array.from({ length: 12 }, (_, i) => ({ ...item, id: String(i) })),
+    );
+    const screen = await renderApp();
+    await expect.element(screen.getByText("Lamp").first()).toBeVisible();
+    const sort = screen.getByLabelText("Sort by").element();
+    const bar = screen.getByText("Wishlist").last().element();
+    screen.getByRole("listitem").nth(8).element().scrollIntoView();
+    await expect.poll(() => window.scrollY).toBeGreaterThan(0);
+    await expect
+      .poll(() => sort.getBoundingClientRect().top)
+      .toBeGreaterThanOrEqual(bar.getBoundingClientRect().bottom);
+    expect(sort.getBoundingClientRect().bottom).toBeLessThan(200);
+  });
+});
+
 describe("Floating button", () => {
   it("never covers the last wish at the bottom of the page", async () => {
     await page.viewport(390, 600);
