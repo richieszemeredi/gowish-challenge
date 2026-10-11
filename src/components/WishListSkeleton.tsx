@@ -3,9 +3,9 @@ export function WishListSkeleton(): React.JSX.Element {
     <ul
       aria-busy="true"
       aria-label="Loading wishes"
-      className="grid gap-4 sm:grid-cols-2"
+      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
     >
-      {[0, 1, 2, 3].map((i) => (
+      {[0, 1, 2, 3, 4, 5].map((i) => (
         <li
           key={i}
           className="animate-pulse overflow-hidden rounded-card border border-line bg-card"

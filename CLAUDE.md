@@ -50,7 +50,7 @@ Soft, friendly, pastel "paper" look, set up in `src/index.css` and the existing 
 
 - **Surface:** warm off-white paper (`bg-paper`, `bg-card`) with soft radial colour washes (coral, sky, mint) and a light film grain overlay on `body::after`. Don't add opaque full-bleed backgrounds that hide it.
 - **Palette:** ink text (`text-ink`, secondary `text-ink-soft`), hairlines `border-line`, and pastel accents `coral`, `mint`, `sky`, `butter` each with a `-soft` tint. Use accents semantically and consistently, e.g. mint for available or yours, butter or coral for reserved or conflict. Never use raw hex or default Tailwind colours; add new tokens to `@theme` if one is truly needed.
-- **Shape and depth:** large rounded cards (`rounded-card`, 1.75rem), `shadow-soft`, an opaque `bg-card` and a thin `border-white/70`. Content is a centered column (`max-w-3xl`) with generous spacing (`gap-8`, `p-5 sm:p-7`).
+- **Shape and depth:** large rounded cards (`rounded-card`, 1.75rem), `shadow-soft`, an opaque `bg-card` and a thin `border-white/70`. Content is a centered column (`max-w-3xl`, `lg:max-w-5xl`) with generous spacing (`gap-8`, `p-5 sm:p-7`).
 - **Type:** `font-display` (rounded) for headings, bold with tight tracking; `font-sans` system stack for body. No web fonts.
 - **Layout:** mobile-first, enhanced at `sm:`; use `min-h-dvh`, not `100vh`.
 - **Focus:** the global `:focus-visible` sky outline is the focus style. Don't remove or override it.

@@ -11,7 +11,7 @@ export function WishItems({ items }: { items: WishItem[] }): React.JSX.Element {
     return <p className="text-ink-soft">No wishes yet.</p>;
 
   return (
-    <ul className="grid gap-4 sm:grid-cols-2">
+    <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((item) => (
         <WishItemCard
           key={item.id}

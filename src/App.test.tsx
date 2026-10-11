@@ -1,4 +1,5 @@
 import { expect } from "vitest";
+import { page } from "vitest/browser";
 import * as api from "@/api";
 import { renderApp } from "@/test/renderApp";
 
@@ -181,5 +182,25 @@ describe("New wish sheet", () => {
     await expect
       .element(screen.getByRole("dialog", { name: "New wish" }))
       .not.toBeInTheDocument();
+  });
+});
+
+describe("Grid columns", () => {
+  const columns = (list: Element): number =>
+    getComputedStyle(list).gridTemplateColumns.split(" ").length;
+
+  it.each([
+    ["mobile", 390, 1],
+    ["tablet", 800, 2],
+    ["desktop", 1280, 3],
+  ])("uses %s layout at %ipx", async (_name, width, expected) => {
+    await page.viewport(width, 900);
+    vi.mocked(api.getItems).mockResolvedValue(
+      ["1", "2", "3"].map((id) => ({ ...item, id })),
+    );
+    const screen = await renderApp();
+    const list = screen.getByRole("list");
+    await expect.element(list).toBeVisible();
+    expect(columns(list.element())).toBe(expected);
   });
 });
