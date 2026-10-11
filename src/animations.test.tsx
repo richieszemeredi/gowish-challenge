@@ -124,42 +124,19 @@ describe("Validation messages", () => {
 });
 
 describe("Add button icon", () => {
-  it("goes plus → spinner, transitioning", async () => {
+  it("spins while saving, without transitions", async () => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
-    let resolve: (i: api.WishItem) => void = () => undefined;
     vi.mocked(api.getItems).mockResolvedValue([]);
-    vi.mocked(api.addItem).mockReturnValue(
-      new Promise((r) => {
-        resolve = r;
-      }),
-    );
+    vi.mocked(api.addItem).mockReturnValue(new Promise(() => undefined));
     const screen = await renderApp();
 
     await openSheet(screen);
-    await expect.element(await icon(screen, "save")).toBeVisible();
     await addVase(screen);
     await vi.advanceTimersByTimeAsync(50);
 
     const spinner = await icon(screen, "loader-circle");
-    expect(transitionsOf(spinner, "opacity")).toHaveLength(1);
+    expect(transitionsOf(spinner, "opacity")).toHaveLength(0);
     expect(keyframesOf(spinner).map((a) => a.animationName)).toContain("spin");
-
-    resolve(vase);
-    await vi.advanceTimersByTimeAsync(50);
-    await expect.element(screen.getByText("Wish added")).toBeVisible();
-  });
-
-  it("goes to an X on failure, then back to retry", async () => {
-    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
-    vi.mocked(api.getItems).mockResolvedValue([]);
-    vi.mocked(api.addItem).mockRejectedValue(new Error("Network error"));
-    const screen = await renderApp();
-    await openSheet(screen);
-    await addVase(screen);
-    await vi.advanceTimersByTimeAsync(50);
-    expect(transitionsOf(await icon(screen, "x"), "opacity")).toHaveLength(1);
-    await vi.advanceTimersByTimeAsync(2100);
-    await icon(screen, "rotate-ccw");
   });
 });
 

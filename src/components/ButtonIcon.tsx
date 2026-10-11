@@ -19,7 +19,7 @@ export function ButtonIcon({
   return (
     <Icon
       aria-hidden="true"
-      className={`size-4 motion-safe:transition motion-safe:duration-200 motion-safe:starting:scale-50 motion-safe:starting:opacity-0 ${status === "loading" ? "motion-safe:animate-spin" : ""}`}
+      className={`size-4 ${status === "loading" ? "motion-safe:animate-spin" : ""}`}
     />
   );
 }
