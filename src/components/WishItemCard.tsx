@@ -1,5 +1,6 @@
-import { Gift } from "lucide-react";
+import { ExternalLink, Gift } from "lucide-react";
 import type { WishItem } from "@/api";
+import { ReservationAction } from "./ReservationAction";
 import { ReservationBadge } from "./ReservationBadge";
 
 const formatPrice = (item: WishItem): string =>
@@ -19,7 +20,7 @@ export function WishItemCard({
     <li
       className={`flex flex-col overflow-hidden rounded-card border border-line bg-card ${animate ? "motion-safe:transition motion-safe:duration-300 motion-safe:starting:-translate-y-2 motion-safe:starting:opacity-0" : ""}`}
     >
-      <div className="grid aspect-4/3 place-items-center bg-paper-deep text-ink-soft">
+      <div className="relative grid aspect-4/3 place-items-center bg-paper-deep text-ink-soft">
         {item.imageUrl !== undefined ? (
           <img
             src={item.imageUrl}
@@ -30,29 +31,35 @@ export function WishItemCard({
         ) : (
           <Gift aria-hidden="true" className="size-10" />
         )}
+        <ReservationBadge reservedBy={item.reservedBy} />
       </div>
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex flex-col gap-1">
           <h3 className="font-display font-bold tracking-tight">
-            {item.title}
+            {item.url !== undefined ? (
+              <a
+                href={item.url}
+                target="_blank"
+                rel="noreferrer"
+                className="underline underline-offset-4"
+              >
+                {item.title}
+                <ExternalLink
+                  aria-hidden="true"
+                  className="ml-1.5 inline size-4 align-[-0.125em]"
+                />
+                <span className="sr-only"> (opens in new tab)</span>
+              </a>
+            ) : (
+              item.title
+            )}
           </h3>
           <span className="text-ink-soft tabular-nums">
             {formatPrice(item)}
           </span>
         </div>
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-2">
-          <ReservationBadge reservedBy={item.reservedBy} />
-          {item.url !== undefined ? (
-            <a
-              href={item.url}
-              target="_blank"
-              rel="noreferrer"
-              className="font-medium underline underline-offset-4"
-            >
-              View
-              <span className="sr-only"> {item.title} in store</span>
-            </a>
-          ) : null}
+        <div className="mt-auto">
+          <ReservationAction item={item} />
         </div>
       </div>
     </li>

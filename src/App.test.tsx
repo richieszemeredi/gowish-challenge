@@ -4,7 +4,14 @@ import * as api from "@/api";
 import { finished, style, transitionsOf } from "@/test/animations";
 import { renderApp } from "@/test/renderApp";
 
-vi.mock("@/api");
+vi.mock("@/api", async (importOriginal) => {
+  const actual = await importOriginal<typeof api>();
+  return {
+    ...vi.mockObject(actual),
+    ConflictError: actual.ConflictError,
+    NotFoundError: actual.NotFoundError,
+  };
+});
 
 const item: api.WishItem = {
   id: "1",
@@ -45,10 +52,10 @@ describe("Wishlist", () => {
     ]);
     const screen = await renderApp();
     await expect
-      .element(screen.getByRole("heading", { name: "Lamp" }))
+      .element(screen.getByRole("heading", { name: /^Lamp/ }))
       .toBeVisible();
     await expect
-      .element(screen.getByRole("link", { name: /Lamp in store/ }))
+      .element(screen.getByRole("link", { name: /^Lamp/ }))
       .toHaveAttribute("href", "https://example.com/lamp");
     await expect.element(screen.getByText("Reserved by mette")).toBeVisible();
     await expect.element(screen.getByText("Reserved by you")).toBeVisible();
@@ -99,12 +106,12 @@ describe("Adding an item", () => {
     vi.mocked(api.getItems).mockResolvedValue([]);
     const screen = await renderApp();
     await open(screen);
-    await screen.getByRole("button", { name: "Add wish" }).click();
+    await screen.getByRole("button", { name: "Save wish" }).click();
     await expect.element(screen.getByText("Enter a title")).toBeVisible();
     await expect.element(screen.getByText("Enter a price")).toBeVisible();
 
     await fill(screen, "Lamp", "-5", "nope");
-    await screen.getByRole("button", { name: "Add wish" }).click();
+    await screen.getByRole("button", { name: "Save wish" }).click();
     await expect
       .element(screen.getByText("Price can't be negative"))
       .toBeVisible();
@@ -119,7 +126,7 @@ describe("Adding an item", () => {
     const screen = await renderApp();
     await open(screen);
     await fill(screen, "  Lamp ", "12,50", "https://example.com");
-    await screen.getByRole("button", { name: "Add wish" }).click();
+    await screen.getByRole("button", { name: "Save wish" }).click();
     await expect.element(screen.getByText("Wish added")).toBeVisible();
     await expect
       .element(screen.getByRole("dialog", { name: "New wish" }))
@@ -139,7 +146,7 @@ describe("Adding an item", () => {
     const screen = await renderApp();
     await open(screen);
     await fill(screen, "Lamp", "10");
-    await screen.getByRole("button", { name: "Add wish" }).click();
+    await screen.getByRole("button", { name: "Save wish" }).click();
     await expect.element(screen.getByText("Wish added")).toBeVisible();
     expect(api.addItem).toHaveBeenCalledWith({
       title: "Lamp",
@@ -155,7 +162,7 @@ describe("Adding an item", () => {
     const screen = await renderApp();
     await open(screen);
     await fill(screen, "Lamp", "10");
-    await screen.getByRole("button", { name: "Add wish" }).click();
+    await screen.getByRole("button", { name: "Save wish" }).click();
     await expect
       .element(screen.getByText("Couldn’t add the wish."))
       .toBeVisible();
@@ -281,5 +288,115 @@ describe("Loading skeleton", () => {
     const card = screen.getByRole("listitem").first();
     await expect.element(card.getByText("Lamp")).toBeVisible();
     expect(card.element().getBoundingClientRect().height).toBe(before);
+  });
+});
+
+describe("Reserving", () => {
+  const reserve = (
+    screen: Awaited<ReturnType<typeof renderApp>>,
+  ): ReturnType<typeof screen.getByRole> =>
+    screen.getByRole("button", { name: /^Reserve/ });
+
+  const later = async <T,>(read: () => T): Promise<T> => {
+    await Promise.resolve();
+    return read();
+  };
+
+  // A tiny server: the list always reflects what reserve/unreserve did.
+  const serve = (...initial: api.WishItem[]): void => {
+    let state = initial;
+    const set = (id: string, reservedBy: string | null): api.WishItem => {
+      state = state.map((i) => (i.id === id ? { ...i, reservedBy } : i));
+      return state.find((i) => i.id === id) ?? item;
+    };
+    vi.mocked(api.getItems).mockImplementation(async () => later(() => state));
+    vi.mocked(api.reserveItem).mockImplementation(async (id) =>
+      later(() => set(id, api.CURRENT_USER)),
+    );
+    vi.mocked(api.unreserveItem).mockImplementation(async (id) =>
+      later(() => set(id, null)),
+    );
+  };
+
+  it("reserves optimistically and unreserves again", async () => {
+    serve(item);
+    const screen = await renderApp();
+    await reserve(screen).click();
+    await expect.element(screen.getByText("Reserved by you")).toBeVisible();
+    await expect.element(screen.getByText("Reserved Lamp.")).toBeVisible();
+    expect(api.reserveItem).toHaveBeenCalledWith("1");
+    await screen.getByRole("button", { name: /^Unreserve/ }).click();
+    await expect.element(screen.getByText("Available")).toBeVisible();
+    await expect.element(screen.getByText("Unreserved Lamp.")).toBeVisible();
+  });
+
+  it("only blocks the pending item", async () => {
+    serve(item, { ...item, id: "2", title: "Vase" });
+    vi.mocked(api.reserveItem).mockReturnValue(new Promise(() => undefined));
+    const screen = await renderApp();
+    await screen.getByRole("button", { name: "Reserve Lamp" }).click();
+    await expect
+      .element(screen.getByRole("button", { name: "Reserving Lamp" }))
+      .toBeDisabled();
+    await expect
+      .element(screen.getByRole("button", { name: "Reserve Vase" }))
+      .toBeEnabled();
+  });
+
+  it("disables reserving items held by others", async () => {
+    serve({ ...item, reservedBy: "mette" });
+    const screen = await renderApp();
+    await expect.element(screen.getByText("Reserved by mette")).toBeVisible();
+    await expect.element(reserve(screen)).toBeDisabled();
+  });
+
+  it("rolls back to the server's truth on a conflict", async () => {
+    const taken = { ...item, reservedBy: "mette" };
+    serve(item);
+    vi.mocked(api.reserveItem).mockImplementation(async () => {
+      vi.mocked(api.getItems).mockResolvedValue([taken]);
+      await Promise.resolve();
+      throw new api.ConflictError(taken);
+    });
+    const screen = await renderApp();
+    await reserve(screen).click();
+    await expect
+      .element(screen.getByRole("status"))
+      .toHaveTextContent("mette already reserved Lamp.");
+    await expect.element(screen.getByText("Reserved by mette")).toBeVisible();
+  });
+
+  it("rolls back on a network error and retries", async () => {
+    serve(item);
+    const ok = vi.mocked(api.reserveItem).getMockImplementation();
+    vi.mocked(api.reserveItem)
+      .mockRejectedValueOnce(new Error("Network error"))
+      .mockImplementation(ok ?? (async () => later(() => item)));
+    const screen = await renderApp();
+    await reserve(screen).click();
+    await expect
+      .element(screen.getByText(/Couldn’t reserve Lamp/))
+      .toBeVisible();
+    await expect.element(screen.getByText("Available")).toBeVisible();
+    await screen.getByRole("button", { name: "Retry" }).click();
+    await expect.element(screen.getByText("Reserved by you")).toBeVisible();
+  });
+});
+
+describe("Toast list", () => {
+  it("keeps earlier toasts visible when more arrive", async () => {
+    vi.mocked(api.getItems).mockResolvedValue([
+      item,
+      { ...item, id: "2", title: "Vase" },
+    ]);
+    vi.mocked(api.reserveItem).mockImplementation(async (id) => {
+      await Promise.resolve();
+      return { ...item, id, reservedBy: api.CURRENT_USER };
+    });
+    const screen = await renderApp();
+    await screen.getByRole("button", { name: "Reserve Lamp" }).click();
+    await screen.getByRole("button", { name: "Reserve Vase" }).click();
+    await expect.element(screen.getByText("Reserved Lamp.")).toBeVisible();
+    await expect.element(screen.getByText("Reserved Vase.")).toBeVisible();
   });
 });

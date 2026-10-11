@@ -16,7 +16,7 @@ export function ReservationBadge({
 
   return (
     <span
-      className={`w-fit rounded-full px-3 py-1 text-sm font-medium text-ink ${tone}`}
+      className={`absolute top-3 right-3 rounded-full px-3 py-1 text-sm font-medium text-ink shadow-soft ${tone}`}
     >
       {label}
     </span>

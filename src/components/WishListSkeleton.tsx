@@ -20,7 +20,7 @@ export function WishListSkeleton(): React.JSX.Element {
                 <span className="h-4 w-16 rounded-full bg-paper-deep" />
               </span>
             </div>
-            <span className="mt-auto h-7 w-28 rounded-full bg-paper-deep" />
+            <span className="mt-auto h-9 w-full rounded-full bg-paper-deep" />
           </div>
         </li>
       ))}
