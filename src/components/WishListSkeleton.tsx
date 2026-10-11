@@ -8,12 +8,19 @@ export function WishListSkeleton(): React.JSX.Element {
       {[0, 1, 2, 3, 4, 5].map((i) => (
         <li
           key={i}
-          className="animate-pulse overflow-hidden rounded-card border border-line bg-card"
+          className="flex animate-pulse flex-col overflow-hidden rounded-card border border-line bg-card"
         >
           <div className="aspect-4/3 bg-paper-deep" />
-          <div className="flex flex-col gap-3 p-4">
-            <span className="h-4 w-3/4 rounded-full bg-paper-deep" />
-            <span className="h-4 w-16 rounded-full bg-paper-deep" />
+          <div className="flex flex-1 flex-col gap-3 p-4">
+            <div className="flex flex-col gap-1">
+              <span className="flex h-6 items-center">
+                <span className="h-4 w-3/4 rounded-full bg-paper-deep" />
+              </span>
+              <span className="flex h-6 items-center">
+                <span className="h-4 w-16 rounded-full bg-paper-deep" />
+              </span>
+            </div>
+            <span className="mt-auto h-7 w-28 rounded-full bg-paper-deep" />
           </div>
         </li>
       ))}

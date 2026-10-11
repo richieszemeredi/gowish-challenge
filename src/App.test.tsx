@@ -264,3 +264,22 @@ describe("Floating button", () => {
       .toBe(true);
   });
 });
+
+describe("Loading skeleton", () => {
+  it("is as tall as a loaded card, so nothing jumps", async () => {
+    let resolve: (items: api.WishItem[]) => void = () => undefined;
+    vi.mocked(api.getItems).mockReturnValue(
+      new Promise((r) => {
+        resolve = r;
+      }),
+    );
+    const screen = await renderApp();
+    const placeholder = screen.getByRole("listitem").first();
+    await expect.element(placeholder).toBeVisible();
+    const before = placeholder.element().getBoundingClientRect().height;
+    resolve([item]);
+    const card = screen.getByRole("listitem").first();
+    await expect.element(card.getByText("Lamp")).toBeVisible();
+    expect(card.element().getBoundingClientRect().height).toBe(before);
+  });
+});
