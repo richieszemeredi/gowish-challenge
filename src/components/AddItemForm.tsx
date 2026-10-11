@@ -54,11 +54,13 @@ export function AddItemForm({
     >
       <TextField
         label="Title"
+        required
         register={register("title")}
         error={errors.title?.message}
       />
       <TextField
         label="Price (DKK)"
+        required
         inputMode="decimal"
         register={register("price")}
         error={errors.price?.message}
@@ -70,6 +72,9 @@ export function AddItemForm({
         register={register("url")}
         error={errors.url?.message}
       />
+      <p className="text-sm text-ink-soft">
+        <span aria-hidden="true">* </span>Required
+      </p>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <p role="status" className="min-h-6">
           {isError ? (

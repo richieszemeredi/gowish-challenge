@@ -22,8 +22,8 @@ const openSheet = async (screen: Screen): Promise<void> => {
 };
 
 const addVase = async (screen: Screen): Promise<void> => {
-  await screen.getByLabelText("Title").fill("Vase");
-  await screen.getByLabelText("Price (DKK)").fill("10");
+  await screen.getByLabelText(/^Title/).fill("Vase");
+  await screen.getByLabelText(/^Price/).fill("10");
   await screen.getByRole("button", { name: "Add wish" }).click();
 };
 

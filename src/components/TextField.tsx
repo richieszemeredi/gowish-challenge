@@ -5,6 +5,7 @@ type Props = {
   error?: string | undefined;
   inputMode?: "decimal" | "url";
   type?: string;
+  required?: boolean;
   register: UseFormRegisterReturn;
 };
 
@@ -13,6 +14,7 @@ export function TextField({
   error,
   inputMode,
   type = "text",
+  required = false,
   register,
 }: Props): React.JSX.Element {
   const hasError = error !== undefined;
@@ -21,10 +23,17 @@ export function TextField({
     <div className="flex flex-col gap-1">
       <label htmlFor={register.name} className="text-sm font-medium">
         {label}
+        {required ? (
+          <span aria-hidden="true" className="text-coral">
+            {" "}
+            *
+          </span>
+        ) : null}
       </label>
       <input
         id={register.name}
         type={type}
+        aria-required={required || undefined}
         inputMode={inputMode}
         aria-invalid={hasError ? true : undefined}
         aria-describedby={hasError ? errorId : undefined}

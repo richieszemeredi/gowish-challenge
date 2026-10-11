@@ -90,8 +90,8 @@ describe("Adding an item", () => {
     price: string,
     url = "",
   ): Promise<void> => {
-    await screen.getByLabelText("Title").fill(title);
-    await screen.getByLabelText("Price (DKK)").fill(price);
+    await screen.getByLabelText(/^Title/).fill(title);
+    await screen.getByLabelText(/^Price/).fill(price);
     if (url !== "") await screen.getByLabelText(/Link/).fill(url);
   };
 
@@ -109,7 +109,7 @@ describe("Adding an item", () => {
       .element(screen.getByText("Price can't be negative"))
       .toBeVisible();
     await expect.element(screen.getByText(/Enter a valid link/)).toBeVisible();
-    await expect.element(screen.getByLabelText("Title")).toHaveValue("Lamp");
+    await expect.element(screen.getByLabelText(/^Title/)).toHaveValue("Lamp");
     expect(api.addItem).not.toHaveBeenCalled();
   });
 
@@ -130,7 +130,7 @@ describe("Adding an item", () => {
       url: "https://example.com",
     });
     await screen.getByRole("button", { name: "New wish" }).click();
-    await expect.element(screen.getByLabelText("Title")).toHaveValue("");
+    await expect.element(screen.getByLabelText(/^Title/)).toHaveValue("");
   });
 
   it("omits an empty link", async () => {
@@ -159,7 +159,7 @@ describe("Adding an item", () => {
     await expect
       .element(screen.getByText("Couldn’t add the wish."))
       .toBeVisible();
-    await expect.element(screen.getByLabelText("Title")).toHaveValue("Lamp");
+    await expect.element(screen.getByLabelText(/^Title/)).toHaveValue("Lamp");
     await expect
       .element(screen.getByRole("dialog", { name: "New wish" }))
       .toBeVisible();
