@@ -1,5 +1,4 @@
-import { screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { expect } from "vitest";
 import * as api from "@/api";
 import { renderApp } from "@/test/renderApp";
 
@@ -13,30 +12,36 @@ const item: api.WishItem = {
   reservedBy: null,
 };
 
-describe("App", () => {
+describe("Wishlist", () => {
   it("shows a skeleton, then the wishlist", async () => {
-    vi.mocked(api.getItems).mockResolvedValue([item]);
-    renderApp();
-    expect(
-      screen.getByRole("heading", { name: "Wishlist" }),
-    ).toBeInTheDocument();
-    expect(screen.getByLabelText("Loading wishes")).toBeInTheDocument();
-    expect(await screen.findByText("Lamp")).toBeInTheDocument();
-    expect(screen.getByText(/1\.000,00/)).toBeInTheDocument();
+    let resolve: (items: api.WishItem[]) => void = () => undefined;
+    vi.mocked(api.getItems).mockReturnValue(
+      new Promise((r) => {
+        resolve = r;
+      }),
+    );
+    const screen = await renderApp();
+    await expect
+      .element(screen.getByRole("heading", { name: "Wishlist" }))
+      .toBeVisible();
+    await expect.element(screen.getByLabelText("Loading wishes")).toBeVisible();
+    resolve([item]);
+    await expect.element(screen.getByText("Lamp")).toBeVisible();
+    await expect.element(screen.getByText(/1\.000,00/)).toBeVisible();
   });
 
   it("shows an empty state when there are no wishes", async () => {
     vi.mocked(api.getItems).mockResolvedValue([]);
-    renderApp();
-    expect(await screen.findByText("No wishes yet.")).toBeInTheDocument();
+    const screen = await renderApp();
+    await expect.element(screen.getByText("No wishes yet.")).toBeVisible();
   });
 
   it("shows an error and recovers on retry", async () => {
     vi.mocked(api.getItems)
       .mockRejectedValueOnce(new Error("Network error"))
       .mockResolvedValueOnce([item]);
-    renderApp();
-    await userEvent.click(await screen.findByRole("button", { name: "Retry" }));
-    expect(await screen.findByText("Lamp")).toBeInTheDocument();
+    const screen = await renderApp();
+    await screen.getByRole("button", { name: "Retry" }).click();
+    await expect.element(screen.getByText("Lamp")).toBeVisible();
   });
 });

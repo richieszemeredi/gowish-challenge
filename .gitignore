@@ -7,3 +7,6 @@ coverage
 
 # Claude Code worktrees
 .claude/worktrees/
+
+# Vitest browser-mode artifacts
+.vitest/

@@ -1,12 +1,10 @@
 import js from "@eslint/js";
 import { defineConfig } from "eslint/config";
 import prettier from "eslint-config-prettier";
-import jestDom from "eslint-plugin-jest-dom";
 import jsxA11y from "eslint-plugin-jsx-a11y";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
-import testingLibrary from "eslint-plugin-testing-library";
 import vitest from "eslint-plugin-vitest";
 import globals from "globals";
 import tseslint from "typescript-eslint";
@@ -78,10 +76,6 @@ export default defineConfig(
   },
   {
     files: ["**/*.{test,spec}.{ts,tsx}", "src/test/**"],
-    extends: [
-      testingLibrary.configs["flat/react"],
-      jestDom.configs["flat/recommended"],
-    ],
     plugins: { vitest },
     rules: {
       ...vitest.configs.recommended.rules,
