@@ -10,7 +10,7 @@ export function WishListSkeleton(): React.JSX.Element {
           key={i}
           className="flex animate-pulse flex-col overflow-hidden rounded-card border border-line bg-card"
         >
-          <div className="aspect-4/3 bg-paper-deep" />
+          <div className="aspect-4/3 bg-sky-soft" />
           <div className="flex flex-1 flex-col gap-3 p-4">
             <div className="flex flex-col gap-1">
               <span className="flex h-6 items-center">

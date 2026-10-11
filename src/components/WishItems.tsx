@@ -4,11 +4,16 @@ import { WishItemCard } from "./WishItemCard";
 
 // Mounted once the list has loaded: rows present at that point appear
 // instantly, rows that arrive later animate in.
-export function WishItems({ items }: { items: WishItem[] }): React.JSX.Element {
+export function WishItems({
+  items,
+  emptyText = "No wishes yet.",
+}: {
+  items: WishItem[];
+  emptyText?: string;
+}): React.JSX.Element {
   const [initialIds] = useState(() => new Set(items.map((i) => i.id)));
 
-  if (items.length === 0)
-    return <p className="text-ink-soft">No wishes yet.</p>;
+  if (items.length === 0) return <p className="text-ink-soft">{emptyText}</p>;
 
   return (
     <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
