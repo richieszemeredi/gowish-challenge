@@ -66,8 +66,6 @@
     pointer-events: none;
     opacity: 0.35;
     mix-blend-mode: multiply;
-    /* Its own transition layer, so it keeps tinting the cards while they move. */
-    view-transition-name: grain;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.28 0 0 0 0 0.25 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
@@ -75,16 +73,4 @@
     outline: 2px solid var(--color-sky);
     outline-offset: 2px;
   }
-}
-
-/* Filtering and sorting run in a view transition: only the wish cards (each
-   has its own view-transition-name) animate, the rest of the page stays put. */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
-}
-
-::view-transition-group(*) {
-  animation-duration: 300ms;
 }

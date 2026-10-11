@@ -1,5 +1,4 @@
 import { expect } from "vitest";
-import { commands } from "vitest/browser";
 import * as api from "@/api";
 import { renderApp } from "@/test/renderApp";
 
@@ -113,62 +112,5 @@ describe("Filtering and sorting", () => {
     await expect
       .element(screen.getByLabelText("Sort by"))
       .not.toBeInTheDocument();
-  });
-});
-
-describe("Filtering and sorting animation", () => {
-  const pseudoOf = (a: Animation): string =>
-    a.effect instanceof KeyframeEffect ? (a.effect.pseudoElement ?? "") : "";
-
-  const cardAnimations = (): Animation[] =>
-    document
-      .getAnimations()
-      .filter((a) => pseudoOf(a).startsWith("::view-transition-"));
-
-  beforeEach(() => {
-    vi.mocked(api.getItems).mockResolvedValue(wishes);
-  });
-
-  it("does not animate the first load", async () => {
-    const spy = vi.spyOn(document, "startViewTransition");
-    const screen = await renderApp();
-    await expect.element(screen.getByText("Lamp")).toBeVisible();
-    expect(spy).not.toHaveBeenCalled();
-    expect(cardAnimations()).toHaveLength(0);
-  });
-
-  it("animates cards when filtering and when sorting", async () => {
-    const screen = await renderApp();
-    await expect.element(screen.getByText("Lamp")).toBeVisible();
-
-    await screen.getByRole("checkbox", { name: "Available only" }).click();
-    await expect.poll(cardAnimations).not.toHaveLength(0);
-    const filtering = cardAnimations();
-    expect(filtering.some((a) => pseudoOf(a).includes("wish-2"))).toBe(true);
-    await Promise.all(filtering.map(async (a) => a.finished));
-    await expect.poll(cardAnimations).toHaveLength(0);
-
-    await screen.getByLabelText("Sort by").selectOptions("price-asc");
-    await expect.poll(cardAnimations).not.toHaveLength(0);
-  });
-
-  it("does not animate when motion is reduced", async () => {
-    await commands.setReducedMotion(true);
-    const spy = vi.spyOn(document, "startViewTransition");
-    const screen = await renderApp();
-    await screen.getByRole("checkbox", { name: "Available only" }).click();
-    await expect.poll(() => titles(screen)).toEqual(["Lamp", "Mug"]);
-    expect(spy).not.toHaveBeenCalled();
-    expect(cardAnimations()).toHaveLength(0);
-  });
-
-  it("does not animate changes that arrive by polling", async () => {
-    const spy = vi.spyOn(document, "startViewTransition");
-    const screen = await renderApp();
-    await expect.element(screen.getByText("Lamp")).toBeVisible();
-    vi.mocked(api.getItems).mockResolvedValue([wishes[0]!]);
-    window.dispatchEvent(new Event("visibilitychange"));
-    await expect.poll(() => titles(screen)).toEqual(["Lamp"]);
-    expect(spy).not.toHaveBeenCalled();
   });
 });

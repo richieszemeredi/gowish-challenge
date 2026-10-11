@@ -18,7 +18,6 @@ export function WishItemCard({
 }): React.JSX.Element {
   return (
     <li
-      style={{ viewTransitionName: `wish-${item.id}` }}
       className={`flex flex-col overflow-hidden rounded-card border border-line bg-card ${animate ? "motion-safe:transition motion-safe:duration-300 motion-safe:starting:-translate-y-2 motion-safe:starting:opacity-0" : ""}`}
     >
       <div className="relative grid aspect-4/3 place-items-center bg-sky-soft text-ink-soft">
