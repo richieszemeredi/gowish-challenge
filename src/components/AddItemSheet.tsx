@@ -49,7 +49,7 @@ export function AddItemSheet(): React.JSX.Element {
         role="status"
         className="pointer-events-none fixed right-4 bottom-20 z-10 sm:right-6 sm:bottom-24"
       >
-        {added > 0 ? <Toast key={added}>Wish added.</Toast> : null}
+        {added > 0 ? <Toast key={added}>Wish added</Toast> : null}
       </p>
     </>
   );

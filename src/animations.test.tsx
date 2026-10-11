@@ -146,7 +146,7 @@ describe("Add button icon", () => {
 
     resolve(vase);
     await vi.advanceTimersByTimeAsync(50);
-    await expect.element(screen.getByText("Wish added.")).toBeVisible();
+    await expect.element(screen.getByText("Wish added")).toBeVisible();
   });
 
   it("goes to an X on failure, then back to plus", async () => {
@@ -173,7 +173,7 @@ describe("Success toast", () => {
     await addVase(screen);
     await vi.advanceTimersByTimeAsync(50);
 
-    const message = screen.getByText("Wish added.");
+    const message = screen.getByText("Wish added");
     await expect.element(message).toBeVisible();
     const fadeIn = transitionsOf(message, "opacity");
     expect(fadeIn).toHaveLength(1);
@@ -197,7 +197,7 @@ describe("Success toast without motion", () => {
     const screen = await renderApp();
     await openSheet(screen);
     await addVase(screen);
-    const message = screen.getByText("Wish added.");
+    const message = screen.getByText("Wish added");
     await expect.element(message).toBeVisible();
     expect(transitionsOf(message, "opacity")).toHaveLength(0);
   });
