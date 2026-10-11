@@ -1,9 +1,8 @@
-import { Check, LoaderCircle, Plus, X, type LucideIcon } from "lucide-react";
+import { Check, LoaderCircle, X, type LucideIcon } from "lucide-react";
 
 export type ButtonStatus = "idle" | "loading" | "success" | "error";
 
-const ICONS: Record<ButtonStatus, LucideIcon> = {
-  idle: Plus,
+const ICONS: Record<Exclude<ButtonStatus, "idle">, LucideIcon> = {
   loading: LoaderCircle,
   success: Check,
   error: X,
@@ -11,10 +10,12 @@ const ICONS: Record<ButtonStatus, LucideIcon> = {
 
 export function ButtonIcon({
   status,
+  idle,
 }: {
   status: ButtonStatus;
+  idle: LucideIcon;
 }): React.JSX.Element {
-  const Icon = ICONS[status];
+  const Icon = status === "idle" ? idle : ICONS[status];
   return (
     <Icon
       aria-hidden="true"

@@ -1,3 +1,4 @@
+import { RotateCcw, Save } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAddItem } from "@/hooks/useAddItem";
@@ -81,8 +82,13 @@ export function AddItemForm({
             <StatusMessage>Couldn’t add the wish.</StatusMessage>
           ) : null}
         </p>
-        <Button type="submit" disabled={isPending} status={status}>
-          {isPending ? "Adding…" : isError ? "Retry" : "Add wish"}
+        <Button
+          type="submit"
+          icon={isError ? RotateCcw : Save}
+          disabled={isPending}
+          status={status}
+        >
+          {isPending ? "Saving…" : isError ? "Retry" : "Save wish"}
         </Button>
       </div>
     </form>

@@ -24,7 +24,7 @@ const openSheet = async (screen: Screen): Promise<void> => {
 const addVase = async (screen: Screen): Promise<void> => {
   await screen.getByLabelText(/^Title/).fill("Vase");
   await screen.getByLabelText(/^Price/).fill("10");
-  await screen.getByRole("button", { name: "Add wish" }).click();
+  await screen.getByRole("button", { name: "Save wish" }).click();
 };
 
 // The icon is remounted on every status change, so look it up fresh.
@@ -102,7 +102,7 @@ describe("Validation messages", () => {
     vi.mocked(api.getItems).mockResolvedValue([]);
     const screen = await renderApp();
     await openSheet(screen);
-    await screen.getByRole("button", { name: "Add wish" }).click();
+    await screen.getByRole("button", { name: "Save wish" }).click();
     const message = screen.getByText("Enter a title");
     await expect.element(message).toBeVisible();
     const fade = transitionsOf(message, "opacity");
@@ -116,7 +116,7 @@ describe("Validation messages", () => {
     vi.mocked(api.getItems).mockResolvedValue([]);
     const screen = await renderApp();
     await openSheet(screen);
-    await screen.getByRole("button", { name: "Add wish" }).click();
+    await screen.getByRole("button", { name: "Save wish" }).click();
     const message = screen.getByText("Enter a title");
     await expect.element(message).toBeVisible();
     expect(transitionsOf(message, "opacity")).toHaveLength(0);
@@ -136,7 +136,7 @@ describe("Add button icon", () => {
     const screen = await renderApp();
 
     await openSheet(screen);
-    await expect.element(await icon(screen, "plus")).toBeVisible();
+    await expect.element(await icon(screen, "save")).toBeVisible();
     await addVase(screen);
     await vi.advanceTimersByTimeAsync(50);
 
@@ -149,7 +149,7 @@ describe("Add button icon", () => {
     await expect.element(screen.getByText("Wish added")).toBeVisible();
   });
 
-  it("goes to an X on failure, then back to plus", async () => {
+  it("goes to an X on failure, then back to retry", async () => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     vi.mocked(api.getItems).mockResolvedValue([]);
     vi.mocked(api.addItem).mockRejectedValue(new Error("Network error"));
@@ -159,7 +159,7 @@ describe("Add button icon", () => {
     await vi.advanceTimersByTimeAsync(50);
     expect(transitionsOf(await icon(screen, "x"), "opacity")).toHaveLength(1);
     await vi.advanceTimersByTimeAsync(2100);
-    await icon(screen, "plus");
+    await icon(screen, "rotate-ccw");
   });
 });
 
