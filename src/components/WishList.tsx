@@ -1,5 +1,5 @@
 import { useWishItems } from "@/hooks/useWishItems";
-import { WishItemRow } from "./WishItemRow";
+import { WishItems } from "./WishItems";
 import { WishListSkeleton } from "./WishListSkeleton";
 
 export function WishList(): React.JSX.Element {
@@ -21,13 +21,5 @@ export function WishList(): React.JSX.Element {
       </div>
     );
 
-  if (data.length === 0) return <p className="text-ink-soft">No wishes yet.</p>;
-
-  return (
-    <ul className="divide-y divide-line">
-      {data.map((item) => (
-        <WishItemRow key={item.id} item={item} />
-      ))}
-    </ul>
-  );
+  return <WishItems items={data} />;
 }
