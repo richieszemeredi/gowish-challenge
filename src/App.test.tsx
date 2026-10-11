@@ -1,6 +1,7 @@
 import { expect } from "vitest";
-import { page } from "vitest/browser";
+import { commands, page } from "vitest/browser";
 import * as api from "@/api";
+import { finished, style, transitionsOf } from "@/test/animations";
 import { renderApp } from "@/test/renderApp";
 
 vi.mock("@/api");
@@ -202,5 +203,43 @@ describe("Grid columns", () => {
     const list = screen.getByRole("list");
     await expect.element(list).toBeVisible();
     expect(columns(list.element())).toBe(expected);
+  });
+});
+
+describe("Sticky header", () => {
+  it("fades in once the header has scrolled away, and out again", async () => {
+    await page.viewport(390, 600);
+    vi.mocked(api.getItems).mockResolvedValue(
+      Array.from({ length: 12 }, (_, i) => ({ ...item, id: String(i) })),
+    );
+    const screen = await renderApp();
+    await expect.element(screen.getByText("Lamp").first()).toBeVisible();
+    const bar = screen.getByText("Wishlist").last();
+    expect(transitionsOf(bar, "opacity")).toHaveLength(0);
+    expect(style(bar, "opacity")).toBe("0");
+
+    window.scrollTo(0, document.body.scrollHeight);
+    await expect.poll(() => transitionsOf(bar, "opacity")).toHaveLength(1);
+    await finished(transitionsOf(bar, "opacity"));
+    expect(style(bar, "opacity")).toBe("1");
+
+    window.scrollTo(0, 0);
+    await expect.poll(() => transitionsOf(bar, "opacity")).toHaveLength(1);
+    await finished(transitionsOf(bar, "opacity"));
+    expect(style(bar, "opacity")).toBe("0");
+  });
+
+  it("appears without a transition when motion is reduced", async () => {
+    await commands.setReducedMotion(true);
+    await page.viewport(390, 600);
+    vi.mocked(api.getItems).mockResolvedValue(
+      Array.from({ length: 12 }, (_, i) => ({ ...item, id: String(i) })),
+    );
+    const screen = await renderApp();
+    await expect.element(screen.getByText("Lamp").first()).toBeVisible();
+    const bar = screen.getByText("Wishlist").last();
+    window.scrollTo(0, document.body.scrollHeight);
+    await expect.poll(() => style(bar, "opacity")).toBe("1");
+    expect(transitionsOf(bar, "opacity")).toHaveLength(0);
   });
 });
