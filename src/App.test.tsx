@@ -76,6 +76,12 @@ describe("Wishlist", () => {
 });
 
 describe("Adding an item", () => {
+  const open = async (
+    screen: Awaited<ReturnType<typeof renderApp>>,
+  ): Promise<void> => {
+    await screen.getByRole("button", { name: "New wish" }).click();
+  };
+
   const fill = async (
     screen: Awaited<ReturnType<typeof renderApp>>,
     title: string,
@@ -90,6 +96,7 @@ describe("Adding an item", () => {
   it("validates the fields", async () => {
     vi.mocked(api.getItems).mockResolvedValue([]);
     const screen = await renderApp();
+    await open(screen);
     await screen.getByRole("button", { name: "Add wish" }).click();
     await expect.element(screen.getByText("Enter a title")).toBeVisible();
     await expect.element(screen.getByText("Enter a price")).toBeVisible();
@@ -108,6 +115,7 @@ describe("Adding an item", () => {
     vi.mocked(api.getItems).mockResolvedValue([]);
     vi.mocked(api.addItem).mockResolvedValue({ ...item, title: "Lamp" });
     const screen = await renderApp();
+    await open(screen);
     await fill(screen, "  Lamp ", "12,50", "https://example.com");
     await screen.getByRole("button", { name: "Add wish" }).click();
     await expect.element(screen.getByText("Wish added.")).toBeVisible();
@@ -123,6 +131,7 @@ describe("Adding an item", () => {
     vi.mocked(api.getItems).mockResolvedValue([]);
     vi.mocked(api.addItem).mockResolvedValue(item);
     const screen = await renderApp();
+    await open(screen);
     await fill(screen, "Lamp", "10");
     await screen.getByRole("button", { name: "Add wish" }).click();
     await expect.element(screen.getByText("Wish added.")).toBeVisible();
@@ -138,6 +147,7 @@ describe("Adding an item", () => {
       .mockRejectedValueOnce(new Error("Network error"))
       .mockResolvedValueOnce(item);
     const screen = await renderApp();
+    await open(screen);
     await fill(screen, "Lamp", "10");
     await screen.getByRole("button", { name: "Add wish" }).click();
     await expect
@@ -146,5 +156,23 @@ describe("Adding an item", () => {
     await expect.element(screen.getByLabelText("Title")).toHaveValue("Lamp");
     await screen.getByRole("button", { name: "Retry" }).click();
     await expect.element(screen.getByText("Wish added.")).toBeVisible();
+  });
+});
+
+describe("New wish sheet", () => {
+  it("is closed until the button is used and can be dismissed", async () => {
+    vi.mocked(api.getItems).mockResolvedValue([]);
+    const screen = await renderApp();
+    await expect
+      .element(screen.getByRole("dialog", { name: "New wish" }))
+      .not.toBeInTheDocument();
+    await screen.getByRole("button", { name: "New wish" }).click();
+    await expect
+      .element(screen.getByRole("dialog", { name: "New wish" }))
+      .toBeVisible();
+    await screen.getByRole("button", { name: "Close" }).click();
+    await expect
+      .element(screen.getByRole("dialog", { name: "New wish" }))
+      .not.toBeInTheDocument();
   });
 });

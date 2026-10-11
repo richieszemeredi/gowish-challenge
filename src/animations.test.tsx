@@ -17,6 +17,10 @@ const vase: api.WishItem = { ...lamp, id: "2", title: "Vase" };
 
 type Screen = Awaited<ReturnType<typeof renderApp>>;
 
+const openSheet = async (screen: Screen): Promise<void> => {
+  await screen.getByRole("button", { name: "New wish" }).click();
+};
+
 const addVase = async (screen: Screen): Promise<void> => {
   await screen.getByLabelText("Title").fill("Vase");
   await screen.getByLabelText("Price (DKK)").fill("10");
@@ -25,7 +29,7 @@ const addVase = async (screen: Screen): Promise<void> => {
 
 // The icon is remounted on every status change, so look it up fresh.
 const icon = async (screen: Screen, name: string): Promise<Locator> => {
-  const selector = `button svg.lucide-${name}`;
+  const selector = `form button svg.lucide-${name}`;
   await expect
     .poll(() => screen.container.querySelector(selector))
     .not.toBeNull();
@@ -49,6 +53,7 @@ describe("List items", () => {
     vi.mocked(api.addItem).mockResolvedValue(vase);
     const screen = await renderApp();
     await expect.element(screen.getByText("Lamp")).toBeVisible();
+    await openSheet(screen);
     await addVase(screen);
 
     const row = screen.getByRole("listitem").filter({ hasText: "Vase" });
@@ -69,6 +74,7 @@ describe("List items", () => {
     vi.mocked(api.addItem).mockResolvedValue(vase);
     const screen = await renderApp();
     await expect.element(screen.getByText("No wishes yet.")).toBeVisible();
+    await openSheet(screen);
     await addVase(screen);
     const row = screen.getByRole("listitem");
     await expect.element(row).toBeVisible();
@@ -83,6 +89,7 @@ describe("List items", () => {
     vi.mocked(api.addItem).mockResolvedValue(vase);
     const screen = await renderApp();
     await expect.element(screen.getByText("Lamp")).toBeVisible();
+    await openSheet(screen);
     await addVase(screen);
     const row = screen.getByRole("listitem").filter({ hasText: "Vase" });
     await expect.element(row).toBeVisible();
@@ -94,6 +101,7 @@ describe("Validation messages", () => {
   it("fade in", async () => {
     vi.mocked(api.getItems).mockResolvedValue([]);
     const screen = await renderApp();
+    await openSheet(screen);
     await screen.getByRole("button", { name: "Add wish" }).click();
     const message = screen.getByText("Enter a title");
     await expect.element(message).toBeVisible();
@@ -107,6 +115,7 @@ describe("Validation messages", () => {
     await commands.setReducedMotion(true);
     vi.mocked(api.getItems).mockResolvedValue([]);
     const screen = await renderApp();
+    await openSheet(screen);
     await screen.getByRole("button", { name: "Add wish" }).click();
     const message = screen.getByText("Enter a title");
     await expect.element(message).toBeVisible();
@@ -126,6 +135,7 @@ describe("Add button icon", () => {
     );
     const screen = await renderApp();
 
+    await openSheet(screen);
     await expect.element(await icon(screen, "plus")).toBeVisible();
     await addVase(screen);
     await vi.advanceTimersByTimeAsync(50);
@@ -152,6 +162,7 @@ describe("Add button icon", () => {
     vi.mocked(api.getItems).mockResolvedValue([]);
     vi.mocked(api.addItem).mockRejectedValue(new Error("Network error"));
     const screen = await renderApp();
+    await openSheet(screen);
     await addVase(screen);
     await vi.advanceTimersByTimeAsync(50);
     expect(transitionsOf(await icon(screen, "x"), "opacity")).toHaveLength(1);
@@ -164,6 +175,7 @@ describe("Add button icon", () => {
     vi.mocked(api.getItems).mockResolvedValue([]);
     vi.mocked(api.addItem).mockResolvedValue(vase);
     const screen = await renderApp();
+    await openSheet(screen);
     await addVase(screen);
     const check = await icon(screen, "check");
     expect(transitionsOf(check, "opacity")).toHaveLength(0);
@@ -176,6 +188,7 @@ describe("Success message", () => {
     vi.mocked(api.getItems).mockResolvedValue([]);
     vi.mocked(api.addItem).mockResolvedValue(vase);
     const screen = await renderApp();
+    await openSheet(screen);
     await addVase(screen);
     await vi.advanceTimersByTimeAsync(50);
 
