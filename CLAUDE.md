@@ -43,6 +43,18 @@ Before finishing a change, `typecheck`, `lint`, `format:check` and `test` must a
 - Disable or mark in-flight items to prevent double submits; one item's pending state must not block the others.
 - Reserved-by-others items are visibly unavailable (show who, since it's a friend group); items you hold offer "unreserve".
 
+## Visual style (already established — extend it, don't reinvent)
+
+Soft, friendly, pastel "paper" look, set up in `src/index.css` and the existing `App`/`Header`/`Panel`:
+
+- **Surface:** warm off-white paper (`bg-paper`, `bg-card`) with soft radial colour washes (coral, sky, mint) and a light film grain overlay on `body::after`. Don't add opaque full-bleed backgrounds that hide it.
+- **Palette:** ink text (`text-ink`, secondary `text-ink-soft`), hairlines `border-line`, and pastel accents `coral`, `mint`, `sky`, `butter` each with a `-soft` tint. Use accents semantically and consistently, e.g. mint for available or yours, butter or coral for reserved or conflict. Never use raw hex or default Tailwind colours; add new tokens to `@theme` if one is truly needed.
+- **Shape and depth:** large rounded cards (`rounded-card`, 1.75rem), `shadow-soft`, a translucent `bg-card/80` with `backdrop-blur-sm` and a thin `border-white/70`. Content is a centered column (`max-w-3xl`) with generous spacing (`gap-8`, `p-5 sm:p-7`).
+- **Type:** `font-display` (rounded) for headings, bold with tight tracking; `font-sans` system stack for body. No web fonts.
+- **Layout:** mobile-first, enhanced at `sm:`; use `min-h-dvh`, not `100vh`.
+- **Focus:** the global `:focus-visible` sky outline is the focus style. Don't remove or override it.
+- Compose UI from `Panel` and small components rather than repeating card classes; Tailwind classes are auto-sorted by Prettier, so run `npm run format`.
+
 ## Conventions
 
 - Function components with explicit return types (`React.JSX.Element`), named exports, no default exports.
@@ -54,7 +66,8 @@ Before finishing a change, `typecheck`, `lint`, `format:check` and `test` must a
 ## Testing
 
 - Every feature ships with tests (Vitest + Testing Library + `user-event`). Test behaviour through the UI the way a user would (queries by role/label), not implementation details.
-- Mock `@/api` at the module boundary; cover loading, success, empty, network error and `ConflictError` paths. `restoreMocks` and `unstubGlobals` are on, so don't hand-reset between tests.
+- **Prefer integration tests.** Render `<App />` (or the whole feature with its real query provider, hooks and child components) and drive it with `user-event`: load the list, reserve, hit a conflict, retry. Don't stub child components or hooks. Write isolated unit tests only for pure logic (e.g. price formatting), not for components.
+- Mock `@/api` at the module boundary, the only seam to fake; cover loading, success, empty, network error and `ConflictError` paths. `restoreMocks` and `unstubGlobals` are on, so don't hand-reset between tests.
 - Don't rely on real timers or the mock's randomness/ghost ticks in tests; mock the API or use fake timers.
 
 ## Git
