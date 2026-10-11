@@ -6,14 +6,14 @@ The backend is a mock in `src/api.ts` (in-memory, no network). Treat its behavio
 
 ## Stack
 
-React 19, TypeScript (strict), Vite, Tailwind CSS v4, Vitest + Testing Library (jsdom). Planned: TanStack Query for server state.
+React 19, TypeScript (strict), Vite, Tailwind CSS v4, Vitest browser mode (Playwright, real Chromium) + `vitest-browser-react`. Planned: TanStack Query for server state.
 
 ## Commands
 
 - `npm run dev` — dev server
 - `npm run build` — typecheck + production build
 - `npm run typecheck` / `npm run lint` / `npm run format:check`
-- `npm test` — Vitest, single run (`npm run test:watch` to iterate)
+- `npm test` — Vitest in headless Chromium, single run (`npm run test:watch` to iterate). First run on a machine needs `npx playwright install chromium`.
 
 Before finishing a change, `typecheck`, `lint`, `format:check` and `test` must all pass. Use `npm run format` / `lint:fix` rather than hand-fixing style.
 
@@ -21,7 +21,8 @@ Before finishing a change, `typecheck`, `lint`, `format:check` and `test` must a
 
 - `src/api.ts` — mock backend and `WishItem` type
 - `src/components/` — UI components (`Panel`, `Header`, …)
-- `src/test/setup.ts` — Vitest setup
+- `src/test/setup.ts` — Vitest setup (loads the real CSS; resets reduced-motion per test)
+- `src/test/animations.ts` — helpers to assert running CSS transitions/animations
 - Import via the `@` alias (`@/components/Panel`) for `src/`
 - Theme tokens (colours, radii, shadows, fonts) live in `src/index.css` under `@theme`. Use those tokens (`bg-card`, `text-ink-soft`, `rounded-card`, `shadow-soft`) instead of ad-hoc values.
 
@@ -49,7 +50,7 @@ Soft, friendly, pastel "paper" look, set up in `src/index.css` and the existing 
 
 - **Surface:** warm off-white paper (`bg-paper`, `bg-card`) with soft radial colour washes (coral, sky, mint) and a light film grain overlay on `body::after`. Don't add opaque full-bleed backgrounds that hide it.
 - **Palette:** ink text (`text-ink`, secondary `text-ink-soft`), hairlines `border-line`, and pastel accents `coral`, `mint`, `sky`, `butter` each with a `-soft` tint. Use accents semantically and consistently, e.g. mint for available or yours, butter or coral for reserved or conflict. Never use raw hex or default Tailwind colours; add new tokens to `@theme` if one is truly needed.
-- **Shape and depth:** large rounded cards (`rounded-card`, 1.75rem), `shadow-soft`, a translucent `bg-card/80` with `backdrop-blur-sm` and a thin `border-white/70`. Content is a centered column (`max-w-3xl`) with generous spacing (`gap-8`, `p-5 sm:p-7`).
+- **Shape and depth:** large rounded cards (`rounded-card`, 1.75rem), `shadow-soft`, an opaque `bg-card` and a thin `border-white/70`. Content is a centered column (`max-w-3xl`) with generous spacing (`gap-8`, `p-5 sm:p-7`).
 - **Type:** `font-display` (rounded) for headings, bold with tight tracking; `font-sans` system stack for body. No web fonts.
 - **Layout:** mobile-first, enhanced at `sm:`; use `min-h-dvh`, not `100vh`.
 - **Focus:** the global `:focus-visible` sky outline is the focus style. Don't remove or override it.
@@ -65,10 +66,11 @@ Soft, friendly, pastel "paper" look, set up in `src/index.css` and the existing 
 
 ## Testing
 
-- Every feature ships with tests (Vitest + Testing Library + `user-event`). Test behaviour through the UI the way a user would (queries by role/label), not implementation details.
+- Every feature ships with tests (Vitest browser mode + `vitest-browser-react`, real CSS in real Chromium). Test behaviour through the UI the way a user would (locators by role/label, retrying `expect.element(...)`), not implementation details.
+- **Animation is a first-class behaviour.** Assert it for real: use `src/test/animations.ts` (`transitionsOf`, `keyframesOf`, `finished`, `style`) to check that a transition runs when it should (new list rows, messages, icon swaps), that it ends in the right state, and that it does not run on first load or under `commands.setReducedMotion(true)`.
 - **Prefer integration tests.** Render `<App />` (or the whole feature with its real query provider, hooks and child components) and drive it with `user-event`: load the list, reserve, hit a conflict, retry. Don't stub child components or hooks. Write isolated unit tests only for pure logic (e.g. price formatting), not for components.
 - Mock `@/api` at the module boundary, the only seam to fake; cover loading, success, empty, network error and `ConflictError` paths. `restoreMocks` and `unstubGlobals` are on, so don't hand-reset between tests.
-- Don't rely on real timers or the mock's randomness/ghost ticks in tests; mock the API or use fake timers.
+- Don't rely on real timers or the mock's randomness/ghost ticks in tests; mock the API or use fake timers (`vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })`; CSS animations run on the browser clock and are unaffected).
 
 ## Git
 
