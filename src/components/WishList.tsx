@@ -21,6 +21,8 @@ export function WishList(): React.JSX.Element {
       </div>
     );
 
+  if (data.length === 0) return <p className="text-ink-soft">No wishes yet.</p>;
+
   return (
     <ul className="divide-y divide-line">
       {data.map((item) => (

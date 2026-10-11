@@ -25,6 +25,12 @@ describe("App", () => {
     expect(screen.getByText(/1\.000,00/)).toBeInTheDocument();
   });
 
+  it("shows an empty state when there are no wishes", async () => {
+    vi.mocked(api.getItems).mockResolvedValue([]);
+    renderApp();
+    expect(await screen.findByText("No wishes yet.")).toBeInTheDocument();
+  });
+
   it("shows an error and recovers on retry", async () => {
     vi.mocked(api.getItems)
       .mockRejectedValueOnce(new Error("Network error"))
