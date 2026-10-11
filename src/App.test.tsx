@@ -30,6 +30,32 @@ describe("Wishlist", () => {
     await expect.element(screen.getByText(/1\.000,00/)).toBeVisible();
   });
 
+  it("shows each wish as a card with image, link and reservation", async () => {
+    vi.mocked(api.getItems).mockResolvedValue([
+      {
+        ...item,
+        imageUrl: "/lamp.png",
+        url: "https://example.com/lamp",
+        reservedBy: "mette",
+      },
+      { ...item, id: "2", title: "Vase", reservedBy: api.CURRENT_USER },
+      { ...item, id: "3", title: "Rug" },
+    ]);
+    const screen = await renderApp();
+    await expect
+      .element(screen.getByRole("heading", { name: "Lamp" }))
+      .toBeVisible();
+    await expect
+      .element(screen.getByRole("link", { name: /Lamp in store/ }))
+      .toHaveAttribute("href", "https://example.com/lamp");
+    await expect.element(screen.getByText("Reserved by mette")).toBeVisible();
+    await expect.element(screen.getByText("Reserved by you")).toBeVisible();
+    await expect.element(screen.getByText("Available")).toBeVisible();
+    expect(screen.container.querySelector("img")?.getAttribute("src")).toBe(
+      "/lamp.png",
+    );
+  });
+
   it("shows an empty state when there are no wishes", async () => {
     vi.mocked(api.getItems).mockResolvedValue([]);
     const screen = await renderApp();

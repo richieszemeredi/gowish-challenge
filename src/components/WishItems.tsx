@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { WishItem } from "@/api";
-import { WishItemRow } from "./WishItemRow";
+import { WishItemCard } from "./WishItemCard";
 
 // Mounted once the list has loaded: rows present at that point appear
 // instantly, rows that arrive later animate in.
@@ -11,9 +11,9 @@ export function WishItems({ items }: { items: WishItem[] }): React.JSX.Element {
     return <p className="text-ink-soft">No wishes yet.</p>;
 
   return (
-    <ul className="divide-y divide-line">
+    <ul className="grid gap-4 sm:grid-cols-2">
       {items.map((item) => (
-        <WishItemRow
+        <WishItemCard
           key={item.id}
           item={item}
           animate={!initialIds.has(item.id)}
