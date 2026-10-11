@@ -119,11 +119,15 @@ describe("Adding an item", () => {
     await fill(screen, "  Lamp ", "12,50", "https://example.com");
     await screen.getByRole("button", { name: "Add wish" }).click();
     await expect.element(screen.getByText("Wish added.")).toBeVisible();
+    await expect
+      .element(screen.getByRole("dialog", { name: "New wish" }))
+      .not.toBeInTheDocument();
     expect(api.addItem).toHaveBeenCalledWith({
       title: "Lamp",
       priceMinor: 1250,
       url: "https://example.com",
     });
+    await screen.getByRole("button", { name: "New wish" }).click();
     await expect.element(screen.getByLabelText("Title")).toHaveValue("");
   });
 
@@ -154,6 +158,9 @@ describe("Adding an item", () => {
       .element(screen.getByText("Couldn’t add the wish."))
       .toBeVisible();
     await expect.element(screen.getByLabelText("Title")).toHaveValue("Lamp");
+    await expect
+      .element(screen.getByRole("dialog", { name: "New wish" }))
+      .toBeVisible();
     await screen.getByRole("button", { name: "Retry" }).click();
     await expect.element(screen.getByText("Wish added.")).toBeVisible();
   });

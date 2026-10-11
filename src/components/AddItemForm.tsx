@@ -11,10 +11,14 @@ import { Button } from "./Button";
 import { StatusMessage } from "./StatusMessage";
 import { TextField } from "./TextField";
 
-export function AddItemForm(): React.JSX.Element {
-  const { mutate, isPending, isError, isSuccess } = useAddItem();
+export function AddItemForm({
+  onAdded,
+}: {
+  onAdded: () => void;
+}): React.JSX.Element {
+  const { mutate, isPending, isError } = useAddItem();
   const status = useTransientStatus(
-    isPending ? "loading" : isSuccess ? "success" : isError ? "error" : "idle",
+    isPending ? "loading" : isError ? "error" : "idle",
   );
   const {
     register,
@@ -36,6 +40,7 @@ export function AddItemForm(): React.JSX.Element {
       {
         onSuccess: () => {
           reset();
+          onAdded();
         },
       },
     );
@@ -69,11 +74,6 @@ export function AddItemForm(): React.JSX.Element {
         <p role="status" className="min-h-6">
           {isError ? (
             <StatusMessage>Couldn’t add the wish.</StatusMessage>
-          ) : null}
-          {isSuccess ? (
-            <StatusMessage visible={status === "success"}>
-              Wish added.
-            </StatusMessage>
           ) : null}
         </p>
         <Button type="submit" disabled={isPending} status={status}>
