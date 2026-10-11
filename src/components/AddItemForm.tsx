@@ -65,11 +65,8 @@ export function AddItemForm(): React.JSX.Element {
         register={register("url")}
         error={errors.url?.message}
       />
-      <div className="flex items-center gap-4">
-        <Button type="submit" disabled={isPending} status={status}>
-          {isPending ? "Adding…" : isError ? "Retry" : "Add wish"}
-        </Button>
-        <p role="status">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <p role="status" className="min-h-6">
           {isError ? (
             <StatusMessage>Couldn’t add the wish.</StatusMessage>
           ) : null}
@@ -79,6 +76,9 @@ export function AddItemForm(): React.JSX.Element {
             </StatusMessage>
           ) : null}
         </p>
+        <Button type="submit" disabled={isPending} status={status}>
+          {isPending ? "Adding…" : isError ? "Retry" : "Add wish"}
+        </Button>
       </div>
     </form>
   );

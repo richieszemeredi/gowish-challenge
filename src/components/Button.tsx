@@ -17,7 +17,7 @@ export function Button({
     <button
       type={type}
       disabled={disabled}
-      className="inline-flex items-center gap-2 rounded-full bg-mint-soft px-4 py-1.5 font-medium transition-colors duration-200 enabled:cursor-pointer enabled:hover:bg-mint disabled:opacity-60"
+      className="inline-flex items-center justify-center gap-2 rounded-full bg-mint-soft px-4 py-1.5 font-medium transition-colors duration-200 enabled:cursor-pointer enabled:hover:bg-mint disabled:opacity-60"
     >
       <ButtonIcon key={status} status={status} />
       {children}
