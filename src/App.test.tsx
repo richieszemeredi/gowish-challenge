@@ -243,3 +243,24 @@ describe("Sticky header", () => {
     expect(transitionsOf(bar, "opacity")).toHaveLength(0);
   });
 });
+
+describe("Floating button", () => {
+  it("never covers the last wish at the bottom of the page", async () => {
+    await page.viewport(390, 600);
+    vi.mocked(api.getItems).mockResolvedValue(
+      Array.from({ length: 12 }, (_, i) => ({ ...item, id: String(i) })),
+    );
+    const screen = await renderApp();
+    await expect.element(screen.getByText("Lamp").first()).toBeVisible();
+    window.scrollTo(0, document.body.scrollHeight);
+    const last = screen.getByRole("listitem").last().element();
+    const fab = screen.getByRole("button", { name: "New wish" }).element();
+    await expect
+      .poll(
+        () =>
+          last.getBoundingClientRect().bottom <=
+          fab.getBoundingClientRect().top,
+      )
+      .toBe(true);
+  });
+});
