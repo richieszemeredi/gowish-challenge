@@ -54,6 +54,9 @@ describe("Wishlist", () => {
     expect(screen.container.querySelector("img")?.getAttribute("src")).toBe(
       "/lamp.png",
     );
+    expect(screen.container.querySelectorAll("svg.lucide-gift")).toHaveLength(
+      2,
+    );
   });
 
   it("shows an empty state when there are no wishes", async () => {

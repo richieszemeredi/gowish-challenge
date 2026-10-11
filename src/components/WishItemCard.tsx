@@ -1,3 +1,4 @@
+import { Gift } from "lucide-react";
 import type { WishItem } from "@/api";
 import { ReservationBadge } from "./ReservationBadge";
 
@@ -18,7 +19,7 @@ export function WishItemCard({
     <li
       className={`flex flex-col overflow-hidden rounded-card border border-line bg-card ${animate ? "motion-safe:transition motion-safe:duration-300 motion-safe:starting:-translate-y-2 motion-safe:starting:opacity-0" : ""}`}
     >
-      <div className="aspect-4/3 bg-paper-deep">
+      <div className="grid aspect-4/3 place-items-center bg-paper-deep text-ink-soft">
         {item.imageUrl !== undefined ? (
           <img
             src={item.imageUrl}
@@ -26,7 +27,9 @@ export function WishItemCard({
             loading="lazy"
             className="size-full object-cover"
           />
-        ) : null}
+        ) : (
+          <Gift aria-hidden="true" className="size-10" />
+        )}
       </div>
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex flex-col gap-1">
